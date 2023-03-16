@@ -44,9 +44,30 @@ Scanner::nextToken()
     Token* tok;
     string lexeme;
 
-    //TODO
+    // Enquanto o caractere atual não for um espaço em branco, lê e concatena o token
+    // TODO - Reconhecer: "asd//", "int*", "lenght()"
+    while(input[pos] != (" "))
+    {
+        lexeme.append(input[pos]);
+        pos++;
+    }
 
+
+    // Cria novo token
+
+    if (isKeyword())
+
+    else if (isID(lexeme))
+        
+    else if (isNumber(lexeme))
     
+    else if (isOp(lexeme))
+
+    else if (isSep(lexeme))
+
+    else if ()
+
+    // Retorna
 
     return tok;
  

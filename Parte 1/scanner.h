@@ -6,7 +6,7 @@ class Scanner
     private: 
         string input; // Armazena o texto de entrada
         int pos; // Posição atual
-        int line;
+        int line; // Número da linha
 
     public:
 

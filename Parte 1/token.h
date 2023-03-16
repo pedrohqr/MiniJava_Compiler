@@ -5,15 +5,19 @@
 
 using namespace std;
 
+//Nomes e atributos dos tokens da linguagem
 enum Names 
 {
     UNDEF,
-    //Continuar
-    //Nomes e atributos dos tokens da linguagem
+    ID,
+    INTEGER_LITERAL,
+    OP,
+    SEP,
+    KEYWORD,
     END_OF_FILE
 };
 
-class Token 
+class Token
 {
     public: 
         int name;
