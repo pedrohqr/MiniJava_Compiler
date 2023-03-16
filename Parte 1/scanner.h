@@ -7,6 +7,7 @@ class Scanner
         string input; // Armazena o texto de entrada
         int pos; // Posição atual
         int line; // Número da linha
+        bool isKeyword(string t) const;
 
     public:
 
