@@ -37,6 +37,25 @@ Scanner::getLine()
     return line;
 }
 
+    //Método para palavras reservadas
+bool Scanner::isKeyword(string t) const
+{
+
+    string KeyWords[19] = {"boolean", "class", "else", "extends", "false", "if", "int",
+                            "lenght", "main", "new", "public", "return", "static", "String",
+                            "System.out.println", "this", "true", "void", "while"};
+    for(int i = 0; i < 19; i++)
+    {
+        if(t.compare(KeyWords[i]) == 0)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
 //Método que retorna o próximo token da entrada
 Token* 
 Scanner::nextToken()
@@ -46,25 +65,29 @@ Scanner::nextToken()
 
     // Enquanto o caractere atual não for um espaço em branco, lê e concatena o token
     // TODO - Reconhecer: "asd//", "int*", "lenght()"
-    while(strcmp(&input[pos], " "))
+    while(input[pos] != ' ')
     {
-        lexeme = lexeme + input[pos];
+        lexeme += input[pos];
         pos++;
     }
-    tok = new Token(0);
+    cout << lexeme;
+    //tok = new Token(0);
 
     // Cria novo token
 
-    if (isKeyword())
-        // tok = new Token()
+    if (isKeyword(lexeme))
+    {
+         tok = new Token(KEYWORD);
+         cout << "a" << endl;
+    }
         
-    else if (isNumber(lexeme))
+    //else if (isNumber(lexeme))
     
-    else if (isOp(lexeme))
+    //else if (isOp(lexeme))
 
-    else if (isSep(lexeme))
+    //else if (isSep(lexeme))
 
-    else if (isID(lexeme))
+    //else if (isID(lexeme))
 
     else
         lexicalError("Unrecognized symbol");
