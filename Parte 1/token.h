@@ -17,11 +17,7 @@ enum Names
     KEYWORD,
     END_OF_FILE
 };
-/*
-string KeyWords[19] = {"boolean", "class", "else", "extends", "false", "if", "int",
-                        "lenght", "main", "new", "public", "return", "static", "String",
-                        "System.out.println", "this", "true", "void", "while"};
-*/
+
 class Token
 {
     public: 
@@ -35,6 +31,7 @@ class Token
             attribute = UNDEF;
         }
 
+        // Identificador, numeros e strings
         Token(int name, string l)
         {
             this->name = name;
