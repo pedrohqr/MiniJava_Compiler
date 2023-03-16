@@ -46,18 +46,17 @@ Scanner::nextToken()
 
     // Enquanto o caractere atual não for um espaço em branco, lê e concatena o token
     // TODO - Reconhecer: "asd//", "int*", "lenght()"
-    while(input[pos] != (" "))
+    while(strcmp(&input[pos], " "))
     {
-        lexeme.append(input[pos]);
+        lexeme = lexeme + input[pos];
         pos++;
     }
-
+    tok = new Token(0);
 
     // Cria novo token
 
     if (isKeyword())
-
-    else if (isID(lexeme))
+        // tok = new Token()
         
     else if (isNumber(lexeme))
     
@@ -65,7 +64,10 @@ Scanner::nextToken()
 
     else if (isSep(lexeme))
 
-    else if ()
+    else if (isID(lexeme))
+
+    else
+        lexicalError("Unrecognized symbol");
 
     // Retorna
 
@@ -76,7 +78,7 @@ Scanner::nextToken()
 void 
 Scanner::lexicalError(string msg)
 {
-    cout << "Linha "<< line << ": " << msg << endl;
+    cout << "\033[1;31mError - line "<< line << "\033[0m: " << msg << endl;
     
     exit(EXIT_FAILURE);
 }

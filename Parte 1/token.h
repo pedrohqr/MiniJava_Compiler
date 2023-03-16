@@ -1,7 +1,8 @@
 #include <iostream>
 #include <ctype.h> // Funções de caracteres
 #include <errno.h> // Tratamento de erros
-#include <string.h>
+//#include <string.h>
+#include <cstring>
 
 using namespace std;
 
@@ -16,7 +17,11 @@ enum Names
     KEYWORD,
     END_OF_FILE
 };
-
+/*
+string KeyWords[19] = {"boolean", "class", "else", "extends", "false", "if", "int",
+                        "lenght", "main", "new", "public", "return", "static", "String",
+                        "System.out.println", "this", "true", "void", "while"};
+*/
 class Token
 {
     public: 

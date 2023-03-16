@@ -9,16 +9,16 @@ endif
 all: scanner principal comp
 
 scanner:
-	g++ -c scanner.cpp -Wall -o scanner.o
+	g++ -c scanner.cpp -Wall -o tmp/scanner.o
 
 principal:
-	g++ -c principal.cpp -Wall -o principal.o
+	g++ -c principal.cpp -Wall -o tmp/principal.o
 
 comp:
-	g++ token.h principal.o scanner.o -Wall -o $(COMPILER_NAME)
+	g++ token.h tmp/principal.o tmp/scanner.o -Wall -o out/$(COMPILER_NAME)
 	rm -f *.o
 
 # Limpa arquivos objeto e o executavel
 clean:
-	rm -f *.o
-	rm -f $(COMPILER_NAME)
+	rm -f tmp/*.o
+	rm -f out/$(COMPILER_NAME)
