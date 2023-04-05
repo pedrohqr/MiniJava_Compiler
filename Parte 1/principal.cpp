@@ -1,5 +1,13 @@
 #include "scanner.h"
 
+string Token_Names[7] = {"Undefined type",
+                        "Identifier",
+                        "Integer literal",
+                        "Operator",
+                        "Separator",
+                        "KeyWord",
+                        "End of file"};
+
 int main(int argc, char* argv[]) 
 {
     //Verifica se foi executado corretamente
@@ -19,8 +27,25 @@ int main(int argc, char* argv[])
     {
         t = scanner->nextToken();
         
-        cout << t->name << " ";
+        // Se o token for um ID
+        if(t->name == ID)
+            cout << "ID(" << t->lexeme << ") ";
+        else if(t->name == KEYWORD) // Palavra reservada
+            cout << t->lexeme << " ";
+        else if(t->name == OP) // Operador
+            cout << "OPERATOR(" << t->lexeme << ") ";
+        else if(t->name == SEP) // Separador
+            cout << "SEPARATOR(" << (char)t->attribute << ") ";
+        else if(t->name == INTEGER_LITERAL)
+            cout << "NUMBER(" << t->lexeme << ") ";
+        else if(t->name == END_OF_FILE)
+            cout << "END_OF_FILE ";
+        else
+            cout << "UNDEFINED TOKEN(" << t->lexeme << ") ";
+
     }while (t->name != END_OF_FILE);
+
+    cout << endl;
 
     delete scanner;
     

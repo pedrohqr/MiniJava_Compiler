@@ -1,7 +1,13 @@
+// teste
+/* comentario
+multi
+linha */
 public class MinhaClasse
-{
+{ /* pedro */
     public static void main(String[] args)
     {
         System.out.println("Ola, Mundo!");
+        int p = 5;
+        float h = 82.585;
     }
-}
+} // tsp 

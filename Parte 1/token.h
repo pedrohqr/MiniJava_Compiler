@@ -18,6 +18,19 @@ enum Names
     END_OF_FILE
 };
 
+enum class Separator : char
+{
+    LPAREN = '(',
+    RPAREN = ')',
+    LBRACKET = '[',
+    RBRACKET = ']',
+    LBRACE = '{',
+    RBRACE = '}',
+    SEMICOLON = ';',
+    COMMA = ',',
+    PERIOD = '.'
+};
+
 class Token
 {
     public: 
@@ -31,7 +44,7 @@ class Token
             attribute = UNDEF;
         }
 
-        // Identificador, numeros e strings
+        // Identificador de strings
         Token(int name, string l)
         {
             this->name = name;
@@ -43,5 +56,12 @@ class Token
         {
             this->name = name;
             attribute = attr;
+        }
+
+        Token(int name, char c)
+        {
+            this->name = name;
+            attribute = UNDEF;
+            lexeme = c;
         }
 };
