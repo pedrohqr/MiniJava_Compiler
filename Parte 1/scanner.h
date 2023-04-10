@@ -11,8 +11,9 @@ class Scanner
         bool isSep(unsigned char c) const;
         bool isOp(string& ret);
         bool isLetter(unsigned char c);
-        bool ignoreChar(unsigned char c);
+        bool isIgnoredChars(unsigned char c);
         bool isNumber(unsigned char c) const;
+        bool isNumber(string s) const;
     public:
 
     //Construtor

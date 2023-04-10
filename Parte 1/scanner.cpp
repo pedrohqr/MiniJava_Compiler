@@ -129,8 +129,11 @@ Scanner::isLetter(unsigned char c)
 
 // Retorna true se o char atual é um dos caracteres a serem ignorados
 bool
-Scanner::ignoreChar(unsigned char c)
+Scanner::isIgnoredChars(unsigned char c)
 {
+    if (c == 10) // "\n"
+     line++;
+
     if(c == 9 || c == 10 || c == 12 || c == 13)
         return true;
     else
@@ -147,6 +150,22 @@ Scanner::isNumber(unsigned char c) const
         return false;
 }
 
+// Percorre a string s e verifica se ela é um número
+bool 
+Scanner::isNumber(string s) const
+{
+    size_t t = 0;
+    // Percorre a String
+    while (s[t] != '\0')
+        if (s[t] < 48 || s[t] > 57) // Se não for um número
+            return false;
+        else // Se for um número
+            t++;
+
+    return true;
+    
+}
+
 //Método que retorna o próximo token da entrada
 Token* 
 Scanner::nextToken()
@@ -155,7 +174,7 @@ Scanner::nextToken()
     string lexeme;
 
     // Ignora os espaços em branco e derivados
-    while(input[pos] == ' ' || ignoreChar(input[pos]))
+    while(input[pos] == ' ' || isIgnoredChars(input[pos]))
         pos++;
 
     // Ignora comentarios //
@@ -164,7 +183,10 @@ Scanner::nextToken()
         while(input[pos] != '\n' && pos < input.length()-1)
             pos++;
         if(input[pos] == '\n')
+        {
+            line++;
             pos++;
+        }
     }
 
     // Ingora comentarios /**/
@@ -172,15 +194,23 @@ Scanner::nextToken()
     {
         pos += 2;
         while(input[pos] != '*' && input[pos+1] != '/' && pos < input.length()-2)
+        {
+            if (input[pos] == 10) // "\n"
+                line++;
             pos++;
+        }
+
         if(pos <= input.length()-2)
             pos += 2;
         if(input[pos] == '\n')
+        {
+            line++;
             pos++;
+        }
     }
 
     // Ignora os espaços em branco e derivados
-    while(input[pos] == ' ' || ignoreChar(input[pos]))
+    while(input[pos] == ' ' || isIgnoredChars(input[pos]))
         pos++;
 
     /*****************************************************************/
@@ -217,15 +247,25 @@ Scanner::nextToken()
     }
     /*****************************************************************/
     /*RECONHECIMENTO DE NUMEROS*/
-    while(isNumber(input[pos]))
+    while(isNumber(input[pos]) || isLetter(input[pos]))
     {
         lexeme += input[pos];
         pos++;
     }
     if(!lexeme.empty())
     {
-        tok = new Token(INTEGER_LITERAL, lexeme);
-        return tok;
+        // Se todos os caracteres forem dígitos numéricos
+        if (isNumber(lexeme))
+        {
+            tok = new Token(INTEGER_LITERAL, lexeme);
+            return tok;
+        }
+        else // Se não, é um ID inválido (começou com um número)
+        {
+            lexicalError("Cannot define a name of a variable/funtion starting with a number");
+            tok = new Token(UNDEF, lexeme);
+            return tok;
+        }
     }
     /*****************************************************************/
     /*RECONHECE O FIM DO ARQUIVO*/
@@ -245,6 +285,7 @@ Scanner::nextToken()
 void 
 Scanner::lexicalError(string msg)
 {
+    cout << endl;
     cout << "\033[1;31mError - line "<< line << "\033[0m: " << msg << endl;
     
     //exit(EXIT_FAILURE);
