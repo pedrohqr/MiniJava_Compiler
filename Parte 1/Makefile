@@ -30,6 +30,9 @@ $(TMPDIR)/principal.o: principal.cpp
 run:
 	$(OUTDIR)/$(COMPILER_NAME) teste.mj
 
+teste:
+	$(wildcard *.cpp)
+
 # Limpa arquivos objeto e o executavel
 clean:
 	rm -f $(TMPDIR)/*.o

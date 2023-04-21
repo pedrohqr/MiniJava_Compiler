@@ -38,6 +38,8 @@ int main(int argc, char* argv[])
             cout << "SEPARATOR(" << (char)t->attribute << ") ";
         else if(t->name == INTEGER_LITERAL)
             cout << "NUMBER(" << t->lexeme << ") ";
+        else if(t->name == STRING)
+            cout << "STRING(" << t->lexeme << ") ";
         else if(t->name == END_OF_FILE)
             cout << "END_OF_FILE ";
         else

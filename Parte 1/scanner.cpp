@@ -232,6 +232,29 @@ Scanner::nextToken()
     }
 
     /*****************************************************************/
+    /*RECONHECIMENTO DE STRINGS*/
+
+    if(input[pos] == '"')
+    {
+        pos++;
+        while((input[pos] != '"' || (input[pos] == '"' && input[pos+1] == '"')) && pos < input.length())
+        {
+            if(input[pos] == '"' && input[pos+1] == '"')
+                lexeme += input[pos++];
+            else
+                lexeme += input[pos];
+            pos++;
+        }
+        pos++;
+
+        if(!lexeme.empty())
+        {
+            tok = new Token(STRING, lexeme);
+            return tok;
+        }
+    }
+
+    /*****************************************************************/
     /*RECONHECIMENTO DE SEPARADORES*/
     if(isSep(input[pos]))
     {

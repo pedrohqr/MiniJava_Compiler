@@ -15,6 +15,7 @@ enum Names
     OP,
     SEP,
     KEYWORD,
+    STRING,
     END_OF_FILE
 };
 
