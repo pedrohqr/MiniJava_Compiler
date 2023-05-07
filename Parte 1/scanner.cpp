@@ -1,315 +1,359 @@
-#include "scanner.h"    
+#include "scanner.h"
+#include "exception.h"
 
-//Construtor que recebe uma string com o nome do arquivo 
-//de entrada e preenche input com seu conteúdo.
-Scanner::Scanner(string input)
+/* Constructor that receive a input file and store into the _input string. */
+Scanner::Scanner(std::string FileName)
 {
-    /*this->input = input;
-    cout << "Entrada: " << input << endl << "Tamanho: " 
-         << input.length() << endl;*/
-    pos = 0;
-    line = 1;
+    _pos = 0;
+    _line = _col = 1;
 
-    ifstream inputFile(input, ios::in);
-    string line;
+    std::ifstream inputFile(FileName, std::ios::in);
+    std::string _line;
 
     if (inputFile.is_open())
     {
-        while (getline(inputFile,line) )
+        while (getline(inputFile,_line) )
         {
-            this->input.append(line + '\n');
+            _input.append(_line + '\n');
         }
         inputFile.close();
     }
     else 
-        cout << "Unable to open file: " << strerror(errno) << endl; 
-
-    //A próxima linha deve ser comentada posteriormente.
-    //Ela é utilizada apenas para verificar se o 
-    //preenchimento de input foi feito corretamente.
-    //cout << this->input;
-
+        std::cout << "Unable to open file" << std::endl;
 }
 
 int
 Scanner::getLine()
 {
-    return line;
+    return _line;
 }
 
-    //Método para palavras reservadas
-bool 
-Scanner::isKeyword(string t) const
+/* Get last line into the input position. */
+std::string
+Scanner::getLastLine()
 {
+    std::string auxLine;
+    size_t i = _pos - 1;
+    size_t j = _pos + 1;
 
-    string KeyWords[19] = {"boolean", "class", "else", "extends", "false", "if", "int",
-                            "lenght", "main", "new", "public", "return", "static", "String",
-                            "System.out.println", "this", "true", "void", "while"};
-    for(int i = 0; i < 19; i++)
-    {
-        if(t.compare(KeyWords[i]) == 0)
+    while(_input[i-1] != '\n' && i > 0)
+        i--;
+
+    while(_input[j] != '\n' && j < _input.length())
+        j++;
+    
+    for(;i < j; i++)
+        auxLine += _input[i];
+
+    return auxLine;
+}
+
+/* Return true if the string is a KeyWord and the index relative on KeyWord array. */
+bool
+Scanner::isKeyword(const my::String& t, size_t& idx) const
+{
+    for(size_t i = 0; i < KWArrayLen; i++)
+        if (t == KeyWords[i])
         {
+            idx = i;
             return true;
         }
-    }
 
     return false;
 }
 
+/* Return true if is separator. */
 bool 
-Scanner::isSep(unsigned char c) const
+Scanner::isSeparator(const unsigned char& c) const
 {   
-    // ASCII
-    if (c == 40 || // Parenteses esquerdo 
-        c == 41 || // Parenteses direito
-        c == 91 || // Colchetes esquerdo
-        c == 93 || // Colchetes direito
-        c == 123 ||// Chaves esquerda
-        c == 125 ||// Chaves direita
-        c == 59 || // Ponto e virgula
-        c == 46 || // Ponto
-        c == 44    // Virgula
-        )
-        return true;
-    else
-        return false;    
-}
-
-// Retorna se o caracter atual é um Operador e devolve o valor por referência
-bool 
-Scanner::isOp(string& ret)
-{    
-    if( input[pos] == 60 || // Menor
-        input[pos] == 61 || // Igual
-        input[pos] == 62 || // Maior
-        input[pos] == 42 || // Asterisco
-        input[pos] == 43 || // Mais
-        input[pos] == 45 || // Menos
-        input[pos] == 47 || // Divisao - barra
-        input[pos] == 33    // Exclamação
-        )
-    {
-        ret = input[pos++];
-        return true;
-    }
-    else
-        return false;
-
-    // Se não chegou ao final do arquivo
-    if(input.length() > pos)
-    {
-        if( (input[pos] == 38 && input[pos+1] == 38) || // "&&"
-            (input[pos] == 61 && input[pos+1] == 61) || // "=="
-            (input[pos] == 33 && input[pos+1] == 61)    // "!="
-        )
-        {
-            ret = input[pos]+input[pos+1];
-            pos += 2;
+    for (size_t i = 0; i < SEPArrayLen; i++)
+        if (c == Separators[i])
             return true;
-        }
-        else
-            return false;
-           
-    }    
-}
-
-bool
-Scanner::isLetter(unsigned char c)
-{
-    // Tabela ASCII
-    if( c == 95 ||             // Se o caractere atual é underscore
-       (c >= 65 && c <= 90) || // ou se for uma letra maiuscula
-       (c >= 97 && c <= 122)   // ou se for uma letra minuscula
-    )
-        return true;
-    else
-        return false;
     
+    return false;
 }
 
-// Retorna true se o char atual é um dos caracteres a serem ignorados
+/* Return true if the single char is a Operator. */
 bool
-Scanner::isIgnoredChars(unsigned char c)
+Scanner::isOperator(const unsigned char& c) const
+{
+    for (size_t i = 0; i < OPArrayLen; i++)
+        if (c == Operators[i])
+            return true;
+    
+    return false;
+}
+
+/* Return true if the char is a letter or underscore. */
+bool
+Scanner::isLetter(const unsigned char& c) const
+{
+    return ( (c >= 65 && c <= 90) || (c >= 97 && c <= 122) ) ? true : false;    
+}
+
+/* Return true if char c must be ignored. */
+bool
+Scanner::isIgnoredChars(const unsigned char& c)
 {
     if (c == 10) // "\n"
-     line++;
+    {
+        _line++;
+        _col = 1;
+    }
 
-    if(c == 9 || c == 10 || c == 12 || c == 13)
-        return true;
-    else
-        return false;
+    return (c == 9 || c == 10 || c == 12 || c == 13) ? true : false;
 }
 
-// Retorna true se o char atual for um digito numerico
-bool 
-Scanner::isNumber(unsigned char c) const
+/* Return true if the char c is a digit. */
+inline
+bool
+Scanner::isNumber(const unsigned char& c) const
 {
-    if(c >= 48 && c <= 57)
-        return true;
-    else
-        return false;
+    return (c >= 48 && c <= 57) ? true : false;
 }
 
-// Percorre a string s e verifica se ela é um número
+/* Return true if all string content is only numbers. */
 bool 
-Scanner::isNumber(string s) const
+Scanner::isNumber(const my::String& s) const
 {
     size_t t = 0;
-    // Percorre a String
+        
     while (s[t] != '\0')
-        if (s[t] < 48 || s[t] > 57) // Se não for um número
+        if (!isNumber(s[t])) // If isn't a number
             return false;
-        else // Se for um número
+        else
             t++;
 
     return true;
-    
 }
 
-//Método que retorna o próximo token da entrada
-Token* 
+/* Return the next token from input text file. */
+Token*
 Scanner::nextToken()
 {
     Token* tok;
-    string lexeme;
+    my::String lexeme;
+    size_t index = 0;
 
-    // Ignora os espaços em branco e derivados
-    while(input[pos] == ' ' || isIgnoredChars(input[pos]))
-        pos++;
-
-    // Ignora comentarios //
-    if(input[pos] == '/' && input[pos+1] == '/' && pos < input.length()-2)
+    // Ignore white spaces and others
+    while(_input[_pos] == ' ' || isIgnoredChars(_input[_pos]))
     {
-        while(input[pos] != '\n' && pos < input.length()-1)
-            pos++;
-        if(input[pos] == '\n')
+        _pos++;
+        _col++;
+    }
+
+    // Ignore line comments (//)
+    while(_input[_pos] == '/' && _input[_pos+1] == '/' && _pos < _input.length()-2)
+    {
+        while(_input[_pos] != '\n' && _pos < _input.length()-1)
         {
-            line++;
-            pos++;
+            _pos++;
+            _col++;
+        }
+        if(_input[_pos] == '\n')
+        {
+            _line++;
+            _col = 1;
+            _pos++;
+        }
+
+        // Ignore white spaces and others
+        while(_input[_pos] == ' ' || isIgnoredChars(_input[_pos]))
+        {
+            _pos++;
+            _col++;
         }
     }
 
-    // Ingora comentarios /**/
-    if(input[pos] == '/' && input[pos+1] == '*' && pos < input.length()-2)
+    // Ignore white spaces and others
+    while(_input[_pos] == ' ' || isIgnoredChars(_input[_pos]))
     {
-        pos += 2;
-        while(input[pos] != '*' && input[pos+1] != '/' && pos < input.length()-2)
-        {
-            if (input[pos] == 10) // "\n"
-                line++;
-            pos++;
-        }
-
-        if(pos <= input.length()-2)
-            pos += 2;
-        if(input[pos] == '\n')
-        {
-            line++;
-            pos++;
-        }
+        _pos++;
+        _col++;
     }
 
-    // Ignora os espaços em branco e derivados
-    while(input[pos] == ' ' || isIgnoredChars(input[pos]))
-        pos++;
+    // Ingore block comments (/**/)
+    try
+    {
+        if(_input[_pos] == '/' && _input[_pos+1] == '*' && _pos < _input.length()-2)
+        {
+            _pos += 2;
+            _col += 2;
+            while(!(_input[_pos] == '*' && _input[_pos+1] == '/'))
+            {
+                if (_input[_pos] == 10) // "\n"
+                {
+                    _line++;
+                    _col = 1;
+                }
+                if(_pos >= _input.length()-2) // If comment block was not close
+                    throw ScannerException(_line, _col, "Block comment '*/' not closed.", getLastLine());
+                _pos++;
+                _col++;
+            }
+
+            if(_pos <= _input.length()-2)
+            {
+                _pos += 2;
+                _col += 2;
+            }
+            if(_input[_pos] == '\n')
+            {
+                _line++;
+                _col = 1;
+                _pos++;
+            }
+        }
+    }
+    catch(ScannerException &E)
+    {
+        E.print();
+    }
+
+    // Ignore white spaces and others
+    while(_input[_pos] == ' ' || isIgnoredChars(_input[_pos]))
+    {
+        _pos++;
+        _col++;
+    }
 
     /*****************************************************************/
-    /*RECONHECIMENTO DE KEYWORD E ID*/
+    /*KEYWORD AND ID RECOGNIZEMENT*/
 
-    // Enquanto o caractere atual for uma letra ou underscore
-    while(isLetter(input[pos]) || lexeme == "System" || lexeme == "System.out" )
-        lexeme += input[pos++];
-    
-    // Se leu alguma letra ou underscore, reconhece um possivel ID ou KEYWORD
-    if (!lexeme.empty())
+    try
     {
-        if(isKeyword(lexeme))        
-            tok = new Token(KEYWORD, lexeme);
-        else        
-            tok = new Token(ID, lexeme);
+        // If the first char of the lexeme is a letter, then append letters and numbers
+        if (isLetter(_input[_pos]) || _input[_pos] == '_')
+
+        // While the actual char is a letter, underscore or number
+        while( isLetter(_input[_pos]) || _input[_pos] == '_' || isNumber(_input[_pos]) || lexeme == "System" || lexeme == "System.out" )
+        {
+            _col++;
+            lexeme.append(_input[_pos++]);
+        }
         
-        return tok;
-    }
-
-    /*****************************************************************/
-    /*RECONHECIMENTO DE STRINGS*/
-
-    if(input[pos] == '"')
-    {
-        pos++;
-        while((input[pos] != '"' || (input[pos] == '"' && input[pos+1] == '"')) && pos < input.length())
+        // If read another letter or underscore, then possible recognize a ID or KEYWORD
+        if (!lexeme.isEmpty())
         {
-            if(input[pos] == '"' && input[pos+1] == '"')
-                lexeme += input[pos++];
+            if(isKeyword(lexeme, index))
+                tok = new TKeyWord(TokenType::KEYWORD, index);
             else
-                lexeme += input[pos];
-            pos++;
+                tok = new TID(TokenType::ID, lexeme);
+            
+            return tok;
         }
-        pos++;
+    }
+    catch(...)
+    {
+        ScannerException E(_line, _col, "Max size of a identifier is [" + std::to_string(my::MaxStringSize) + "].", getLastLine());
+        E.print();
+        return new TUndefToken(TokenType::UNDEF, '\0');
+    }
 
-        if(!lexeme.empty())
+    /*****************************************************************/
+    /*STRING RECOGNIZEMENT*/
+
+    if(_input[_pos] == '"')
+    {
+        std::string str;
+        _pos++;
+        _col++;
+        while((_input[_pos] != '"' || (_input[_pos] == '"' && _input[_pos+1] == '"')) && _pos < _input.length())
         {
-            tok = new Token(STRING, lexeme);
+            if(_input[_pos] == '"' && _input[_pos+1] == '"')
+            {
+                str += _input[_pos++];
+                _col++;
+            }
+            else
+                str += _input[_pos];
+
+            _pos++;
+            _col++;
+        }
+        _pos++;
+        _col++;
+
+        if(!str.empty())
+        {
+            tok = new TString(TokenType::STRING, str);
             return tok;
         }
     }
 
     /*****************************************************************/
-    /*RECONHECIMENTO DE SEPARADORES*/
-    if(isSep(input[pos]))
+    /*SEPARATORS RECOGNIZEMENT*/
+    if(isSeparator(_input[_pos]))
     {
-        tok = new Token(SEP, (int)input[pos++]); // Guarda o atributo como o valor do char ASCII
+        _col++;
+        tok = new TSeparator(TokenType::SEP, _input[_pos++]);
         return tok;
     }
     /*****************************************************************/
-    /*RECONHECIMENTO DE OPERADORES*/    
-    if(isOp(lexeme))
+    /*OPERATORS RECOGNIZEMENT*/
+    if ((_input[_pos] == '&' && _input[_pos+1] == '&') || // &&
+        (_input[_pos] == '=' && _input[_pos+1] == '=') || // ==
+        (_input[_pos] == '!' && _input[_pos+1] == '=')    // !=
+    )
     {
-        tok = new Token(OP, lexeme);
+        lexeme += _input[_pos]; lexeme += _input[_pos+1]; // OTIMIZAR AQUI
+        _pos += 2;
+        _col += 2;
+    }
+    else if (isOperator(_input[_pos]))
+    {
+        lexeme.append(_input[_pos++]);
+        _col++;
+    }
+
+    
+    if(!lexeme.isEmpty())
+    {
+        tok = new TOperator(TokenType::OP, lexeme);
         return tok;
     }
     /*****************************************************************/
-    /*RECONHECIMENTO DE NUMEROS*/
-    while(isNumber(input[pos]) || isLetter(input[pos]))
+    /*NUMBER RECOGNIZEMENT*/
+    while(isNumber(_input[_pos]) || isLetter(_input[_pos]) || _input[_pos] == '_')
     {
-        lexeme += input[pos];
-        pos++;
+        lexeme += _input[_pos];
+        _pos++;
+        _col++;
     }
-    if(!lexeme.empty())
+    try
     {
-        // Se todos os caracteres forem dígitos numéricos
-        if (isNumber(lexeme))
+        if(!lexeme.isEmpty())
         {
-            tok = new Token(INTEGER_LITERAL, lexeme);
-            return tok;
+            // If all chars are numeric digits
+            if (isNumber(lexeme))
+            {
+                tok = new TNumber<unsigned int>(TokenType::INTEGER_LITERAL, lexeme.to_uint());
+                return tok;
+            }
+            else // Else, is a invalid digit (started with a number)
+                throw ScannerException(_line, _col-lexeme.length(), "Cannot define a name of a variable/funtion starting with a number.", getLastLine());
         }
-        else // Se não, é um ID inválido (começou com um número)
-        {
-            lexicalError("Cannot define a name of a variable/funtion starting with a number");
-            tok = new Token(UNDEF, lexeme);
-            return tok;
-        }
+    }
+    catch(ScannerException& E)
+    {
+        E.print();
+        tok = new TUndefToken(TokenType::UNDEF, '\0');
+        return tok;
     }
     /*****************************************************************/
-    /*RECONHECE O FIM DO ARQUIVO*/
-    if(input[pos] == '\0') // END OF FILE
+    /*END OF FILE RECOGNIZEMENT*/
+    if(_input[_pos] == '\0') // END OF FILE
     {
-        tok = new Token(END_OF_FILE);
+        tok = new Token(TokenType::END_OF_FILE);
         return tok;
     }
     
     /*****************************************************************/
-    /*SE NÃO FOR NENHUM DOS SIMBOLOS ANTERIORES, RETORNA INDEFINIDO*/
-    tok = new Token(UNDEF, input[pos++]);
-    //lexicalError("Unrecognized symbol");
+    /*IF IS NOT ANOTHER THESE SYMBOLS, RETURN UNDEFINED TOKEN*/
+    ScannerException E(_line, _col, "Cannot define a name of a variable/funtion starting with a number", getLastLine());
+    E.print();
+    tok = new TUndefToken(TokenType::UNDEF, _input[_pos++]);
+    _col++;
+
     return tok;
-}
-
-void 
-Scanner::lexicalError(string msg)
-{
-    cout << endl;
-    cout << "\033[1;31mError - line "<< line << "\033[0m: " << msg << endl;
-    
-    //exit(EXIT_FAILURE);
 }

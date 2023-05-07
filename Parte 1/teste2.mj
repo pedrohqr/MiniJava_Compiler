@@ -1,12 +1,7 @@
-// teste9
-8// teste4 /* a */
+// teste
 /* comentario
 multi
 linha */
-
-a
-// d
-
 class MainClass
 { /* pedro */
     public static void main(String[] args)

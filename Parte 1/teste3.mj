@@ -1,0 +1,11 @@
+class MainClass
+{
+    public static void main(String[] args)
+    {
+        if(true)
+            id = 2;
+        else
+            id = 3;
+        System.out.println(x+y);        
+    }
+} // teste

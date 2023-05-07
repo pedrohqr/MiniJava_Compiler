@@ -1,29 +1,31 @@
 #include <fstream>
 #include "token.h"
+#include <string>
+#include <memory>
 
 class Scanner 
 {
-    private: 
-        string input; // Armazena o texto de entrada
-        size_t pos; // Posição atual
-        size_t line; // Número da linha
-        bool isKeyword(string t) const;
-        bool isSep(unsigned char c) const;
-        bool isOp(string& ret);
-        bool isLetter(unsigned char c);
-        bool isIgnoredChars(unsigned char c);
-        bool isNumber(unsigned char c) const;
-        bool isNumber(string s) const;
-    public:
+private: 
+    std::string _input;
+    size_t _pos;
+    size_t _line, _col;
 
-    //Construtor
-        Scanner(string);
+    bool isKeyword(const my::String&, size_t&) const;
+    bool isSeparator(const unsigned char&) const;
+    bool isOperator(const unsigned char&) const;
+    bool isLetter(const unsigned char&) const;
+    bool isIgnoredChars(const unsigned char&);
+    inline bool isNumber(const unsigned char&) const;
+    bool isNumber(const my::String&) const;
 
-        int getLine();
-    
-        //Método que retorna o próximo token da entrada
-        Token* nextToken();
-    
-        //Método para manipular erros
-        void lexicalError(string);
+public:
+
+    Scanner(std::string);
+
+    int getLine();
+
+    Token* nextToken();
+
+    std::string getLastLine();
+
 };

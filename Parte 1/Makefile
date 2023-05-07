@@ -5,6 +5,9 @@ else # Se não, é Unix
 	COMPILER_NAME = compiler
 endif
 
+# Args
+ARGS = -g -Wall
+
 # Diretorios
 OUTDIR = out
 TMPDIR = tmp
@@ -22,18 +25,27 @@ $(OUTDIR)/$(COMPILER_NAME): $(OBJECTS)
 	g++ $(OBJECTS) -o $(OUTDIR)/$(COMPILER_NAME)
 
 $(TMPDIR)/scanner.o: scanner.cpp scanner.h token.h
-	g++ -c scanner.cpp -Wall -o $(TMPDIR)/scanner.o
+	g++ -c scanner.cpp $(ARGS) -o $(TMPDIR)/scanner.o
 
-$(TMPDIR)/principal.o: principal.cpp
-	g++ -c principal.cpp -Wall -o tmp/principal.o
+$(TMPDIR)/main.o: main.cpp
+	g++ -c main.cpp $(ARGS) -o tmp/main.o
+
+$(TMPDIR)/String.o: String.cpp String.h
+	g++ -c String.cpp $(ARGS) -o $(TMPDIR)/String.o
+
+$(TMPDIR)/exception.o: exception.cpp exception.h
+	g++ -c exception.cpp $(ARGS) -o $(TMPDIR)/exception.o
 
 run:
 	$(OUTDIR)/$(COMPILER_NAME) teste.mj
 
-teste:
-	$(wildcard *.cpp)
+gdb:
+	gdb --args $(OUTDIR)/$(COMPILER_NAME) teste.mj
+
+val: #valgrind
+	valgrind --leak-check=yes $(OUTDIR)/$(COMPILER_NAME) teste.mj
 
 # Limpa arquivos objeto e o executavel
 clean:
-	rm -f $(TMPDIR)/*.o
-	rm -f $(OUTDIR)/$(COMPILER_NAME)
+	rm -r $(TMPDIR)
+	rm -r $(OUTDIR)
