@@ -42,3 +42,113 @@ class SalaDeAula extends CustomClass
 {
     
 }*/
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Verificacoes de erros de comentários
+
+// dsadhasuadsuha********dasda**
+
+/* v09)))va
+333####
+
+###
+##@__@
+@_!
+#
+(
+$
+$(!($!
+($!
+)#)
+!
+!)#!)$
+$$!_$)$
+!_)%!
+% => nesta parte não é desejado terminar o comentário, pois eles estão separados por um \n *
+/ => aqui é para realmente terminar */
+
+// Verificacao de identificadores
+
+int i;
+intit if();
+int 
+
+
+
+
+a;
+int b = 
+1111111;
+
+
+int b = 1;
+
+// Verificacao de de declaracao de classe
+
+class Veri (int var){}
+
+calss Veri
+
+class Veri(){}
+
+class Veri(
+int
+a
+){}
+
+int a;
+class Veri(a){}
+
+class                                                                                                                             Veri                    (                                                float                                                                v)
+
+
+// Verificacao de Declaracao de Metodos com Statement e Expression
+
+public void ID(){}
+
+p    u    b    l    i    c    int    
+c(
+int a,
+float b)
+
+pu    b    lic    floa    t    c(){ a = 3
+
+
+
+
+while (00000)
+
+
+a
+
+
+public     int    a    (f    l    o    a        t    c    )    
+{
+sys    tem    .    o    u    t    .    pri    nt    ln    ("string");
+}
+
+public void a(int b)
+{
+while(c = 3)
+c = c + 1;
+if(c != 3)
+c = c - 1;
+}
+
+public int c(){
+return c;
+}
+
+int[7] b;
+
+public int len()
+{
+while(b.length == 6)
+System.out.println("infinito");
+}
+
+public void bolean()
+{
+if(a != true)
+a = false;
+}
