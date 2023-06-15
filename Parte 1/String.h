@@ -34,6 +34,7 @@ public:
     String& operator+=(const char&);
     bool operator==(const String&) const;
     //String& operator=(const std::string&);
+    constexpr auto operator[](const String&);
 
     size_t length();
     bool isEmpty() const;

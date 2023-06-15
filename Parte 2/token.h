@@ -4,11 +4,13 @@
 #include <iostream>
 #include <array>
 
-#pragma pack(1) // Alinhamento
+#pragma pack(1) // Alignment
+
+constexpr auto maxLen = 1024;
 
 enum class TokenType
 {
-    UNDEF = -1,
+    UNDEF,
     ID,
     INTEGER_LITERAL,
     OP,
@@ -17,6 +19,8 @@ enum class TokenType
     STRING,
     END_OF_FILE
 };
+
+constexpr std::array<const char*, 8> TokenTypeNames{"UNDEFINED", "IDENTIFIER", "INTEGER LITERAL", "OPERATOR", "SEPARATOR", "KEYWORD", "STRING", "END OF FILE"};
 
 enum class SeparatorIndex
 {
@@ -92,7 +96,8 @@ public:
     
 
     Token(TokenType t):
-        type{t}
+        type{t},
+        value{this}
     {
         // do nothing
     }
@@ -182,6 +187,42 @@ public:
         if (type == TokenType::ID || type == TokenType::STRING)
             delete (std::string*)value;
     }
+};
+
+/*
+    Template for Compiler Exception abstract class.
+*/
+template <class T>
+class CompilerException
+{
+protected:
+    char _buffer[maxLen];
+
+    /*
+        Get last line into the input position.
+    */
+    std::string
+    getLastLine(std::string& input, size_t& pos) const
+    {
+        std::string auxLine;
+        size_t i = pos - 1;
+        size_t j = pos + 1;
+
+        while(input[i-1] != '\n' && i > 0)
+            i--;
+
+        while(input[j] != '\n' && j < input.length())
+            j++;
+        
+        for(;i < j; i++)
+            auxLine += input[i];
+
+        return auxLine;
+    }
+
+public:
+    
+    virtual void print(T&) const = 0;
 };
 
 #endif

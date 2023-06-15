@@ -243,6 +243,12 @@ my::String::operator==(const my::String& other) const
     return true;
 }
 
+constexpr auto
+my::String::operator[](const String& other)
+{
+
+}
+
 /* Return true if the string is empty. */
 bool 
 my::String::isEmpty() const

@@ -11,6 +11,7 @@ ARGS = -g -Wall
 # Diretorios
 OUTDIR = out
 TMPDIR = tmp
+TESTDIR = tests
 
 OBJECTS = $(patsubst %.cpp, $(TMPDIR)/%.o, $(wildcard *.cpp))
 
@@ -22,7 +23,7 @@ path:
 	@ mkdir -p $(TMPDIR)
 
 $(OUTDIR)/$(COMPILER_NAME): $(OBJECTS)
-	g++ $(OBJECTS) -o $(OUTDIR)/$(COMPILER_NAME)
+	g++ $(OBJECTS) -o $(OUTDIR)/$(COMPILER_NAME) $(ARGS)
 
 $(TMPDIR)/scanner.o: scanner.cpp scanner.h token.h
 	g++ -c scanner.cpp $(ARGS) -o $(TMPDIR)/scanner.o
@@ -30,20 +31,17 @@ $(TMPDIR)/scanner.o: scanner.cpp scanner.h token.h
 $(TMPDIR)/main.o: main.cpp
 	g++ -c main.cpp $(ARGS) -o tmp/main.o
 
-$(TMPDIR)/String.o: String.cpp String.h
-	g++ -c String.cpp $(ARGS) -o $(TMPDIR)/String.o
-
-$(TMPDIR)/exception.o: exception.cpp exception.h
-	g++ -c exception.cpp $(ARGS) -o $(TMPDIR)/exception.o
+$(TMPDIR)/parser.o: parser.cpp parser.h token.h
+	g++ -c parser.cpp $(ARGS) -o $(TMPDIR)/parser.o
 
 run:
-	$(OUTDIR)/$(COMPILER_NAME) teste.mj
+	$(OUTDIR)/$(COMPILER_NAME) $(TESTDIR)/teste.mj
 
 gdb:
-	gdb --args $(OUTDIR)/$(COMPILER_NAME) teste.mj
+	gdb --args $(OUTDIR)/$(COMPILER_NAME) $(TESTDIR)/teste.mj
 
 val: #valgrind
-	valgrind --leak-check=yes $(OUTDIR)/$(COMPILER_NAME) teste.mj
+	valgrind --leak-check=yes $(OUTDIR)/$(COMPILER_NAME) $(TESTDIR)/teste.mj
 
 # Limpa arquivos objeto e o executavel
 clean:

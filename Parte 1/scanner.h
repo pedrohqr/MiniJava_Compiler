@@ -7,22 +7,23 @@ class Scanner
 {
 private: 
     std::string _input;
-    size_t _pos;
     size_t _line, _col;
+    size_t _pos;
 
-    bool isKeyword(const my::String&, size_t&) const;
-    bool isSeparator(const unsigned char&) const;
-    bool isOperator(const unsigned char&) const;
-    bool isLetter(const unsigned char&) const;
-    bool isIgnoredChars(const unsigned char&);
-    inline bool isNumber(const unsigned char&) const;
-    bool isNumber(const my::String&) const;
+    bool isKeyword(const std::string&, size_t&) const;
+    bool isSeparator(const char&) const;
+    bool isOperator(const char&) const;
+    bool isLetter(const char&) const;
+    bool isIgnoredChars(const char&);
+    inline bool isNumber(const char&) const;
+    bool isNumber(const std::string&) const;
+    inline void nextInputChar(int);
 
 public:
 
     Scanner(std::string);
 
-    int getLine();
+    size_t getLine();
 
     Token* nextToken();
 

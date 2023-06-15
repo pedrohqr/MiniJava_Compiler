@@ -28,9 +28,3 @@ ScannerException::print() const
     }
     std::cerr << "^^^" << std::endl;
 }
-
-/*ParserException::ParserException(const size_t &lin, const size_t &col, const std::string base_msg,  const std::string lineStr) :
-CompilerException(base_msg), _line(lin), _col(col), _lineString(lineStr)
-{
-
-}*/

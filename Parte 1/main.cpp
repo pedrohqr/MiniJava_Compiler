@@ -12,27 +12,28 @@ int main(int argc, char* argv[])
     
     Token* t;
     TokenType last = TokenType::END_OF_FILE;
-    
+    std::string* aux;
+
     do
     {
         t = scanner->nextToken();
 
         if(t->type == TokenType::ID)
-            std::cout << "ID(" << ((TID*)t)->value << ") ";
+            std::cout << "ID(\033[1;32m" << *(aux = (std::string*)t->value) << "\033[0m) ";
         else if(t->type == TokenType::KEYWORD)
-            std::cout << KeyWords[ ((TKeyWord*)t)->index ] << " ";
+            std::cout << "\033[1;32m" << KeyWords[ (int)t->kwIndex ] << "\033[0m ";
         else if(t->type == TokenType::OP)
-            std::cout << "OPERATOR(" << ((TOperator*)t)->value << ") ";
+            std::cout << "OPERATOR(\033[1;32m" << Operators[ (int)t->opIndex ] << "\033[0m) ";
         else if(t->type == TokenType::SEP)
-            std::cout << "SEPARATOR(" << ((TSeparator*)t)->c << ") ";
+            std::cout << "SEPARATOR(\033[1;32m" << Separators[ (int)t->sepIndex ] << "\033[0m) ";
         else if(t->type == TokenType::INTEGER_LITERAL)
-            std::cout << "NUMBER(" << ((TNumber<int>*)t)->value << ") ";
+            std::cout << "NUMBER(\033[1;32m" << t->integer << "\033[0m) ";
         else if(t->type == TokenType::STRING)
-            std::cout << "STRING(" << ((TString*)t)->value << ") ";
+            std::cout << "STRING(\033[1;32m" << *(aux = (std::string*)t->value) << "\033[0m) ";
         else if(t->type == TokenType::END_OF_FILE)
-            std::cout << "END_OF_FILE ";
+            std::cout << "\033[1;33mEND_OF_FILE\033[0m ";
         else if(t->type == TokenType::UNDEF)
-            std::cout << "UNDEFINED TOKEN(" << ((TUndefToken*)t)->c << ") ";
+            std::cout << "UNDEFINED TOKEN( ) ";
         else
         {
             std::cerr << "TokenType not defined.\n";

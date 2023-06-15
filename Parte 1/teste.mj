@@ -1,30 +1,12 @@
-// teste9
-8// teste4 /* a */
-/* comentario
-multi
-linha */
-
-a
-// d
-
-class MainClass
-{ /* pedro */
+void MainClass
+{ // teste
     public static void main(String[] args)
     {
-        System.out.println("true");        
-    }
-} // tsp 
-
-class CustomClass
-{
-    int a;
-    Carro Ferrari;
-
-    public int[] Teste()
-    {
+        /* funcao
+        multi 
+        linha
+        */
         boolean x;
-        boolean y;
-
-        System.out.println(x+y);
+        System.out.println();
     }
 }

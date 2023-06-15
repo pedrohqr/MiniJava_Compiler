@@ -1,5 +1,4 @@
 #include "scanner.h"
-#include "exception.h"
 
 /* Constructor that receive a input file and store into the _input string. */
 Scanner::Scanner(std::string FileName)
@@ -23,29 +22,15 @@ Scanner::Scanner(std::string FileName)
 }
 
 size_t
-Scanner::getLine()
+Scanner::getLine() const
 {
     return _line;
 }
 
-/* Get last line into the input position. */
-std::string
-Scanner::getLastLine()
+size_t
+Scanner::getCol() const
 {
-    std::string auxLine;
-    size_t i = _pos - 1;
-    size_t j = _pos + 1;
-
-    while(_input[i-1] != '\n' && i > 0)
-        i--;
-
-    while(_input[j] != '\n' && j < _input.length())
-        j++;
-    
-    for(;i < j; i++)
-        auxLine += _input[i];
-
-    return auxLine;
+    return _col;
 }
 
 /* Return true if the string is a KeyWord and the index relative on KeyWord array. */
@@ -142,7 +127,7 @@ Scanner::nextInputChar(int incPos = 1)
 /* 
     Return the next token from input text file. 
 */
-Token*
+std::shared_ptr<Token>
 Scanner::nextToken()
 try
 {
@@ -172,7 +157,7 @@ try
         else if ( isSeparator(_input[_pos]) ) // Separator
         {
             nextInputChar(1);
-            return new Token(TokenType::SEP, _input[_pos-1]);
+            return std::make_shared<Token>(TokenType::SEP, _input[_pos-1]);
         }
         else if ( isOperator(_input[_pos]) ) // Operator
             goto _Operator;
@@ -182,10 +167,11 @@ try
             goto _String;
         }
         else if ( _input[_pos] == '\0' ) // End of File
-            return new Token(TokenType::END_OF_FILE);
+            return std::make_shared<Token>(TokenType::END_OF_FILE);
         else // Undefined Token
         {
-            throw ScannerException(_line, _col, "Undefined Token.", getLastLine());
+            throw ScannerException("Undefined Token ""%c""",
+                                    _input[_pos]);
         }
 
 
@@ -208,7 +194,7 @@ try
             nextInputChar();
 
             if (_pos >= _input.length()-2) // If comment block was not close
-                throw ScannerException(_line, _col, "Block comment '*/' not closed.", getLastLine());
+                throw ScannerException("Block comment '*/' not closed.");
             
             goto _blockComment;
         }
@@ -228,7 +214,7 @@ try
             goto _IDorKW;
         }
         else // when found other symbol, stop and verify if it's KeyWord or ID
-            return new Token(lexeme);
+            return std::make_shared<Token>(lexeme);
 
     // Strings
     _String:
@@ -245,11 +231,11 @@ try
             goto _String;
         }
         else if ( _pos >= _input.length() ) // String delimiter not closed
-            throw ScannerException(_line, _col, "String delimiter not closed("").", getLastLine());
+            throw ScannerException("String delimiter not closed("").");
         else // else, capture the lexeme value and store into the Token String
         {
             nextInputChar();
-            return new Token(TokenType::STRING, lexeme);
+            return std::make_shared<Token>(TokenType::STRING, lexeme);
         }
 
     // Operators
@@ -261,13 +247,13 @@ try
         {
             nextInputChar(2);
             lexeme = _input[_pos-2] + _input[_pos-1];
-            return new Token(TokenType::OP, lexeme);
+            return std::make_shared<Token>(TokenType::OP, lexeme);
         }
         else // else, is a single operator
         {
             nextInputChar();
             lexeme = _input[_pos-1];
-            return new Token(TokenType::OP, lexeme);
+            return std::make_shared<Token>(TokenType::OP, lexeme);
         }
     
     // Integer Literals
@@ -280,13 +266,13 @@ try
             goto _IntLit;
         }
         else if ( isLetter(_input[_pos]) ) // When found a Letter or Underscore, throw exception
-            throw ScannerException(_line, _col-lexeme.length(), "Cannot define name of a variable/funtion starting with a number.", getLastLine());
+            throw ScannerException("Cannot define name of a variable/funtion starting with a number.");
         else // if found another symbol, get the number
-            return new Token(TokenType::INTEGER_LITERAL, lexeme);
+            return std::make_shared<Token>(TokenType::INTEGER_LITERAL, lexeme);
 }
 catch (ScannerException& E)
 {
-    E.print();
+    E.print(*this);
     nextInputChar();
-    return new Token(TokenType::UNDEF);
+    return std::make_shared<Token>(TokenType::UNDEF);
 }
