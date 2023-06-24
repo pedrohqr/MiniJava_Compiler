@@ -1,0 +1,31 @@
+/*
+    Este teste apresenta o funcionamento da herança de função
+*/
+
+class Main
+{
+    public static void main(String[] args)
+    {
+        {}
+    }
+}
+
+class A
+{
+    public int soma(int x, int y)
+    {
+        return x + y;
+    }
+}
+
+class B extends A
+{
+    public int Retorna_Dobro(int a)
+    {
+        int resultado;
+        
+        resultado = this.soma(a, a);
+
+        return resultado;
+    }
+}

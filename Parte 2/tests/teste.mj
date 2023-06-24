@@ -19,7 +19,7 @@ class MainClass
         }
     }
 }
-/*
+
 class CustomClass
 {
     boolean var;
@@ -32,7 +32,7 @@ class CustomClass
         if(x.length > 0)
             _var = false;
         else
-            _var = true
+            _var = true;
 
         return _var;
     }
@@ -41,4 +41,4 @@ class CustomClass
 class SalaDeAula extends CustomClass
 {
     
-}*/
+}

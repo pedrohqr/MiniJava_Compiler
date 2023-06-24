@@ -1,0 +1,31 @@
+
+/*
+    Teste para a herança na classe
+*/
+
+class MainClass
+{
+    public static void main(String[] args)
+    {
+        {}
+    }
+}
+
+class CustomClass
+{
+    boolean var;
+
+    public boolean IsEmpty()
+    {
+        return var;
+    }
+}
+
+class SalaDeAula extends CustomClass
+{
+    // Retorna atributo da classe herdada
+    public int funcfunc()
+    {
+        return var;
+    }
+}

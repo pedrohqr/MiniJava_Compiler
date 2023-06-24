@@ -1,0 +1,42 @@
+class MainClass
+{
+    public static void main(String[] args)
+    {
+        System.out.println(args);
+    }
+}
+
+class OtherClass
+{
+    int y;
+    boolean x;
+
+    // função que soma dois inteiros
+    public int soma(int a, int b)
+    {
+        return a+b; // ok
+        //return a+g; // erro (g não declarado)
+    }
+
+    // função que soma decrescente de n+(n-1)+(n-2)+...+1
+    public int soma_decrescente(int n)
+    {
+        int temp;
+        temp = 0; // ok
+        //tmp = 0;  // erro (tmp não declarado)
+        while( n > 0 )
+        {
+            temp = temp + n;
+            n = n - 1;
+        }
+
+        return temp;
+    }
+
+    // Getter para a variável da x
+    public boolean get_x()
+    {
+        return x;
+    }
+}
+

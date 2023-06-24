@@ -1,15 +1,19 @@
 #include "parser.h"
 #include <cstdarg>
 
-Parser::Parser(std::string input)
+Parser::Parser(std::string input) :
+	filename{input},
+	errors{0}
 {
+	_currentST = _globalST = new SymbolTable();
+	initSimbolTable();
 	_scanner = std::make_shared<Scanner>(input);
 }
 
 Parser::~Parser()
 {
-	//scanner.reset();
-	//lToken.reset();
+	delete _globalST;
+	//delete _currentST;	
 }
 
 inline
@@ -20,15 +24,28 @@ Parser::advance()
 	_lToken = _scanner->nextToken();
 }
 
-
-
 inline
 void
 Parser::match(const TokenType& expected)
 try
 {
 	if ( _lToken->type == expected || _lToken->type == TokenType::UNDEF )
-		advance();		
+	{
+		if (_lToken->type == TokenType::ID) // If it's an identifier
+		{
+			std::string *id = (std::string*)_lToken->value; // Get string id by pointers
+			if ( !_currentST->find( *id ) ) // if not find an entry in symbol table, throw
+			{
+				throw ParserException("Identifier not defined: (%s)",
+									id->c_str());
+			}
+		}
+		advance();
+	}
+	else if ( _lToken->type == TokenType::END_OF_FILE )
+	{
+		exit(0);
+	}
 	else
 		throw ParserException("Unexpected token: You give (%s) and the expected was (%s).", 
 							  	TokenTypeNames[(int)_lToken->type+1],
@@ -37,6 +54,8 @@ try
 catch (ParserException& E)
 {
 	E.print(*this);
+	errors++;
+	advance();
 }
 
 inline
@@ -61,6 +80,8 @@ try
 catch (ParserException& E)
 {
 	E.print(*this);
+	errors++;
+	advance();
 }
 
 inline
@@ -82,6 +103,8 @@ try
 catch (ParserException& E)
 {
 	E.print(*this);
+	errors++;
+	advance();
 }
 
 inline
@@ -99,16 +122,121 @@ try
 catch (ParserException& E)
 {
 	E.print(*this);
+	errors++;
+	advance();
+}
+
+/*
+	Add to current Symbol Table. If the current lookahead token its an identifier,
+	then add to the current symbol table.
+*/
+inline
+void
+Parser::addToCurrST()
+try
+{
+	if (_lToken->type == TokenType::ID)
+		if (!_currentST->add(new STEntry(_lToken.get())))
+		{
+			std::string *ptr = (std::string*)_lToken->value;
+			throw ParserException("Identifier already exists on current scope: (%s).",
+								  ptr->c_str());
+		}
+}
+catch (ParserException &E)
+{
+	E.print(*this);
+	errors++;
+}
+
+/*
+	Add to global Symbol Table. If the current lookahead token its an identifier,
+	then add to the global symbol table.
+*/
+inline
+void
+Parser::addToGlobalST()
+try
+{
+	if (_lToken->type == TokenType::ID)
+		if (!_globalST->add(new STEntry(_lToken.get())))
+		{
+			std::string *ptr = (std::string*)_lToken->value;
+			throw ParserException("Identifier already exists on global scope: (%s).",
+								  ptr->c_str());
+		}
+}
+catch (ParserException &E)
+{
+	E.print(*this);
+	errors++;
+}
+
+/*
+	Create new Symbol Table.
+*/
+inline
+void
+Parser::createNewST()
+{
+	SymbolTable* newST = new SymbolTable(_currentST);
+	_currentST = newST;
+}
+
+/*
+	Create new Symbol Table with parent.
+*/
+inline
+void
+Parser::createNewST(SymbolTable* parent)
+{
+	SymbolTable* newST = new SymbolTable(parent);
+	_currentST = newST;
+}
+
+/*
+	Close current Symbol Table. This method free the current symbol table and forces
+	the current point to the parent symbol table.
+*/
+inline
+void
+Parser::closeCurrST()
+{
+	SymbolTable* tmp = _currentST->getParent();
+	delete _currentST;
+	_currentST = tmp;
+}
+
+/*
+	Initialization of Symbol Table.
+*/
+inline
+void
+Parser::initSimbolTable()
+{	
+	/*_globalST->add( new STEntry( new Token(KeyWordIndex::CLASS), true ) );
+	_globalST->add( new STEntry( new Token(KeyWordIndex::EXTENDS), true ) );
+	_globalST->add( new STEntry( new Token(KeyWordIndex::PUBLIC), true ) );
+	_globalST->add( new STEntry( new Token(KeyWordIndex::INT), true ) );
+	_globalST->add( new STEntry( new Token(KeyWordIndex::NEW), true ) );
+	_globalST->add( new STEntry( new Token(KeyWordIndex::STATIC), true ) );
+	_globalST->add( new STEntry( new Token(KeyWordIndex::STRING), true ) );
+	_globalST->add( new STEntry( new Token(KeyWordIndex::THIS), true ) );
+	_globalST->add( new STEntry( new Token(KeyWordIndex::VOID), true ) );*/
 }
 
 void
 Parser::run()
 {
+	std::cout << "************* compilation started **************" << std::endl;
+	std::cout << "File: " << filename << std::endl;
+
 	advance();
 
 	Program();
 
-	std::cout << "Compilation finished sucessfully!" << std::endl;
+	std::cout << "Total errors: " << errors << std::endl;
+	std::cout << "************* compilation finished *************" << std::endl;
 }
 
 void
@@ -125,8 +253,10 @@ void
 Parser::MainClass()
 {
     // 2. MainClass -> class ID {public static void main(String[] ID){ Statement }}
-	match(KeyWordIndex::CLASS); 
-	match(TokenType::ID); 
+	match(KeyWordIndex::CLASS);
+	addToGlobalST();
+	match(TokenType::ID);
+	createNewST();
 	match(SeparatorIndex::LBRACE);
 	match(KeyWordIndex::PUBLIC); 
 	match(KeyWordIndex::STATIC); 
@@ -136,11 +266,13 @@ Parser::MainClass()
 	match(KeyWordIndex::STRING);
 	match(SeparatorIndex::LBRACKET);
 	match(SeparatorIndex::RBRACKET);
+	addToCurrST();
 	match(TokenType::ID);
 	match(SeparatorIndex::RPAREN);
 	match(SeparatorIndex::LBRACE);
 	Statement(); 
 	match(SeparatorIndex::RBRACE);
+	closeCurrST();
 	match(SeparatorIndex::RBRACE);
 }
 
@@ -148,13 +280,19 @@ void
 Parser::ClassDeclaration()
 {
 	// 3. ClassDeclaration -> class ID (extends ID)? { (VarDeclaration)* (MethodDeclaration)* }
-	match(KeyWordIndex::CLASS); 
+	match(KeyWordIndex::CLASS);
+
+	addToGlobalST();
+
 	match(TokenType::ID);
 	if (_lToken->kwIndex == KeyWordIndex::EXTENDS)
 	{
-		match(KeyWordIndex::EXTENDS); 
+		match(KeyWordIndex::EXTENDS);
 		match(TokenType::ID);
+		createNewST(_currentST);
 	}
+	else
+		createNewST();
 
 	match(SeparatorIndex::LBRACE);
 
@@ -167,13 +305,19 @@ Parser::ClassDeclaration()
 		MethodDeclaration();
 	
 	match(SeparatorIndex::RBRACE);
+		
+	//closeCurrST();
 }
 
 void
 Parser::VarDeclaration()
 {
 	// 4. VarDeclaration -> Type ID;
-	Type(); match(TokenType::ID); match(SeparatorIndex::SEMICOLON);
+	
+	Type(); 
+	addToCurrST();
+	match(TokenType::ID); 
+	match(SeparatorIndex::SEMICOLON);
 }
 
 void
@@ -182,18 +326,23 @@ Parser::MethodDeclaration()
 	// 5. MethodDeclaration -> public Type ID( (Type ID(, Type ID)*)? ){ (VarDeclaration)* (Statement)* return Expression; }
 
 	match(KeyWordIndex::PUBLIC);
-	Type(); 
+	Type();
+	addToCurrST();
 	match(TokenType::ID);
 	match(SeparatorIndex::LPAREN);
+
+	createNewST();
 
 	if(_lToken->sepIndex != SeparatorIndex::RPAREN)
 	{
 		Type();
+		addToCurrST();
 		match(TokenType::ID);
 		while(_lToken->sepIndex != SeparatorIndex::RPAREN)
 		{
 			match(SeparatorIndex::COMMA);
 			Type();
+			addToCurrST();
 			match(TokenType::ID);
 		}
 	}
@@ -205,9 +354,10 @@ Parser::MethodDeclaration()
 	// Enquanto lToken = int ou boolean -> (VarDeclaration)
 	while(_lToken->kwIndex == KeyWordIndex::INT || _lToken->kwIndex == KeyWordIndex::BOOLEAN || (_lToken->type == TokenType::ID && seeNextToken(TokenType::ID)))
 	{
-		Type();
+		/*Type();
 		match(TokenType::ID);
-		match(SeparatorIndex::SEMICOLON);
+		match(SeparatorIndex::SEMICOLON);*/
+		VarDeclaration();
 	}
 
 	// FIRST(Statement) = { {, if, while, System.out.println, ID}
@@ -220,6 +370,8 @@ Parser::MethodDeclaration()
 	match(SeparatorIndex::SEMICOLON);
 
 	match(SeparatorIndex::RBRACE);
+
+	closeCurrST();
 }
 
 void
@@ -266,33 +418,33 @@ try
 
 	*/
 
-	if(_lToken->sepIndex == SeparatorIndex::LBRACE)
+	if(_lToken->sepIndex == SeparatorIndex::LBRACE && _lToken->type == TokenType::SEP)
 	{
 		match(SeparatorIndex::LBRACE); 
 		while(_lToken->sepIndex != SeparatorIndex::RBRACE)
 			Statement();
 		match(SeparatorIndex::RBRACE);
 	}
-	else if(_lToken->kwIndex == KeyWordIndex::IF)
+	else if(_lToken->kwIndex == KeyWordIndex::IF && _lToken->type == TokenType::KEYWORD)
 	{
 		match(KeyWordIndex::IF); match(SeparatorIndex::LPAREN); Expression(); match(SeparatorIndex::RPAREN);
 			Statement();
 		match(KeyWordIndex::ELSE);
 			Statement();
 	}
-	else if(_lToken->kwIndex == KeyWordIndex::WHILE)
+	else if(_lToken->kwIndex == KeyWordIndex::WHILE && _lToken->type == TokenType::KEYWORD)
 	{
 		match(KeyWordIndex::WHILE); match(SeparatorIndex::LPAREN); Expression(); match(SeparatorIndex::RPAREN);
 			Statement();
 	}
-	else if(_lToken->kwIndex == KeyWordIndex::SYSOUT) // System.out.println
+	else if(_lToken->kwIndex == KeyWordIndex::SYSOUT && _lToken->type == TokenType::KEYWORD) // System.out.println
 	{
 		match(KeyWordIndex::SYSOUT); match(SeparatorIndex::LPAREN); Expression(); match(SeparatorIndex::RPAREN); match(SeparatorIndex::SEMICOLON);
 	}
 	else if(_lToken->type == TokenType::ID)
 	{
 		match(TokenType::ID);
-		if(_lToken->opIndex == OperatorIndex::ATRIB) // Se "="
+		if(_lToken->opIndex == OperatorIndex::ATRIB && _lToken->type == TokenType::OP) // Se "="
 		{
 			match(OperatorIndex::ATRIB); 
 			Expression(); 
@@ -313,6 +465,7 @@ try
 catch(ParserException &E)
 {
 	E.print(*this);
+	errors++;
 }
 
 
@@ -363,67 +516,81 @@ try
 	| ID ( (Expression(, Expression)*)? )
 
 	*/
-	/*if(seeNextToken<int>(OP) || seeNextToken<char>('[') || seeNextToken<char>('.'))
-	{
-		Expression();
-	}
-	else*/ if(_lToken->type == TokenType::INTEGER_LITERAL)
+	if(_lToken->type == TokenType::INTEGER_LITERAL)
 	{	
-		match(TokenType::INTEGER_LITERAL);	_Expression();
+		match(TokenType::INTEGER_LITERAL);
+		_Expression();
 	}
 	else if(_lToken->kwIndex == KeyWordIndex::TRUE)
 	{	
-		match(KeyWordIndex::TRUE);	_Expression();
+		match(KeyWordIndex::TRUE);
+		_Expression();
 	}
 	else if(_lToken->kwIndex == KeyWordIndex::FALSE)
 	{
-		match(KeyWordIndex::FALSE);	_Expression();
+		match(KeyWordIndex::FALSE);	
+		_Expression();
 	}
 	else if(_lToken->type == TokenType::ID)
 	{
-		match(TokenType::ID);	_Expression();
+		match(TokenType::ID);	
+		_Expression();
 	}
 	else if(_lToken->kwIndex == KeyWordIndex::THIS)
 	{
-		match(KeyWordIndex::THIS);	_Expression();
+		match(KeyWordIndex::THIS);	
+		_Expression();
 	}
 	else if(_lToken->kwIndex == KeyWordIndex::NEW)
 	{
 		match(KeyWordIndex::NEW);
 		if(seeNextToken(TokenType::ID)) // se próximo token for ID
 		{
-			match(TokenType::ID); match(SeparatorIndex::LPAREN); match(SeparatorIndex::RPAREN);
+			match(TokenType::ID); 
+			match(SeparatorIndex::LPAREN); 
+			match(SeparatorIndex::RPAREN);
 		}
 		else // próximo token for int
 		{
-			match(KeyWordIndex::INT); match(SeparatorIndex::LBRACKET); Expression(); match(SeparatorIndex::RBRACKET);
+			match(KeyWordIndex::INT); 
+			match(SeparatorIndex::LBRACKET); 
+			Expression(); 
+			match(SeparatorIndex::RBRACKET);
 		}
 		_Expression();
 	}
 	else if(_lToken->type == TokenType::STRING)
 	{
-		match(TokenType::STRING); 	_Expression();
+		match(TokenType::STRING); 	
+		_Expression();
 	}
 	else if(_lToken->opIndex == OperatorIndex::NOT)
 	{
-		match(OperatorIndex::NOT); Expression(); 	_Expression();
+		match(OperatorIndex::NOT); 
+		Expression(); 	
+		_Expression();
 	}
 	else if(_lToken->sepIndex == SeparatorIndex::LPAREN)
 	{
-		match(SeparatorIndex::LPAREN); Expression(); match(SeparatorIndex::RPAREN); _Expression();
+		match(SeparatorIndex::LPAREN); 
+		Expression(); 
+		match(SeparatorIndex::RPAREN); 
+		_Expression();
 	}
 	else
 	{
 		if(_lToken->type == TokenType::SEP)
-			ParserException("Token unexpected: (''%c'').",
-							Separators[(int)_lToken->sepIndex]);
+			throw ParserException("Unexpected token: You give (%c) and the expected was a valid expression.",
+								  Separators[(int)_lToken->sepIndex]);
 		else
-			ParserException("Unexpected Operator Token.");
+			throw ParserException("Unexpected token: You give (%s) and the expected was a valid expression.",
+								  TokenTypeNames[(int)_lToken->type]);
 	}
 }
-catch (ParserException& E)
+catch (ParserException &E)
 {
 	E.print(*this);
+	errors++;
 }
 
 void
@@ -453,6 +620,7 @@ Parser::Op()
 
 void
 Parser::_Expression()
+try
 {
 	/*
 	_Expression -> Op Expression _Expression
@@ -463,18 +631,30 @@ Parser::_Expression()
 	*/
 	if(_lToken->type == TokenType::OP)
 	{
-		Op(); Expression(); _Expression();
+		Op(); 
+		Expression(); 
+		_Expression();
 	}
 	if(_lToken->sepIndex == SeparatorIndex::LBRACKET)
 	{
-		match(SeparatorIndex::LBRACKET); Expression(); match(SeparatorIndex::RBRACKET); _Expression();
+		match(SeparatorIndex::LBRACKET); 
+		Expression(); 
+		match(SeparatorIndex::RBRACKET); 
+		_Expression();
 	}
 	else if(_lToken->sepIndex == SeparatorIndex::PERIOD)
 	{
-		match(SeparatorIndex::PERIOD); __Expression(); _Expression();
+		match(SeparatorIndex::PERIOD); 
+		__Expression(); 
+		_Expression();
 	}
 	else
 		;
+}
+catch(ParserException &E)
+{
+	E.print(*this);
+	errors++;
 }
 
 void
@@ -491,7 +671,8 @@ Parser::__Expression()
 	}
 	else if(_lToken->type == TokenType::ID)
 	{
-		match(TokenType::ID); match(SeparatorIndex::LPAREN);
+		match(TokenType::ID); 
+		match(SeparatorIndex::LPAREN);
 
 		// Se a chamada de função não tem argumentos
 		if(_lToken->sepIndex == SeparatorIndex::RPAREN)
@@ -502,7 +683,8 @@ Parser::__Expression()
 			
 			while (_lToken->sepIndex != SeparatorIndex::RPAREN)
 			{
-				match(SeparatorIndex::COMMA); Expression();
+				match(SeparatorIndex::COMMA); 
+				Expression();
 			}
 			
 			match(SeparatorIndex::RPAREN);
@@ -514,7 +696,6 @@ Parser::__Expression()
 	Olha para o próximo token do lookahead mas não avança o ponteiro. Retorna se o tipo
 	esperado é compatível com o atual.
 */
-
 bool
 Parser::seeNextToken(const TokenType& expected)
 {
