@@ -6,7 +6,10 @@ This is an academic job compiler for a `Mini Java` language. We built using `Mod
 This compiler can identify commmon symbols simmilar `Java` language and your respective keywords. Ex: _public_, _void_, _int_, _String_, etc.
 
 ## Parser
-The Parser can interpret the input and tell if the given syntax is wrong or right. See more about syntax rules in `analise_lexica.pdf`.
+The Parser can interpret the input and tell if the given syntax is wrong or right. See more about syntax rules in `analise_sintatica.pdf`.
 
 ## Sematical Analizer
 This software is capable of variables/functions recognizment in given scope, class declarations.
+
+### Examples
+To see some file exemples, look at `tests` directory.
